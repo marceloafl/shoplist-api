@@ -11,5 +11,5 @@ public partial class Shoplist
 
     public string? Description { get; set; }
 
-    public virtual ICollection<Product> Products { get; } = new List<Product>();
+    public virtual ICollection<Product> Products { get; set; } = new List<Product>();
 }
