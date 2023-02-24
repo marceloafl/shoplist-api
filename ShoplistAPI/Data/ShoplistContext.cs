@@ -7,12 +7,7 @@ namespace ShoplistAPI.Data;
 
 public partial class ShoplistContext : DbContext
 {
-    public ShoplistContext()
-    {
-    }
-
-    public ShoplistContext(DbContextOptions<ShoplistContext> options)
-        : base(options)
+    public ShoplistContext(DbContextOptions<ShoplistContext> options): base(options)
     {
     }
 

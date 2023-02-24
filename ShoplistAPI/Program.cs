@@ -1,4 +1,10 @@
+using Microsoft.EntityFrameworkCore;
+using ShoplistAPI.Data;
+
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddDbContext<ShoplistContext>(options =>
+    options.UseNpgsql(builder.Configuration.GetConnectionString("ShoplistConnection")));
 
 // Add services to the container.
 
