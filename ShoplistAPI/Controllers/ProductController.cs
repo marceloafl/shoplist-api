@@ -15,12 +15,22 @@ namespace ShoplistAPI.Controllers
             _context = context;
         }
 
+        /// <summary>
+        /// Retorna todos os produtos cadastrados
+        /// </summary>
+        /// <response code="200">Lista de produtos obtida com sucesso.</response>
         [HttpGet]
         public IEnumerable<Product> GetAll()
         {
             return _context.Products.ToList();
         }
 
+        /// <summary>
+        /// Retorna um produto específico por ID.
+        /// </summary>
+        /// <param name="id">ID do produto.</param>
+        /// <response code="200">Produto obtido com sucesso.</response>
+        /// <response code="404">Não foi encontrado produto com o ID especificado.</response>
         [HttpGet("{id}")]
         public IActionResult GetById(int id)
         {
@@ -30,6 +40,11 @@ namespace ShoplistAPI.Controllers
             return Ok(productWithQueriedId);
         }
 
+        /// <summary>
+        /// Cadastra um produto.
+        /// </summary>
+        /// <param name="product">Modelo do produto.</param>
+        /// <response code="201">Produto cadastrado com sucesso.</response>
         [HttpPost]
         public IActionResult Add([FromBody] Product product)
         {
@@ -41,6 +56,13 @@ namespace ShoplistAPI.Controllers
 
         }
 
+        /// <summary>
+        /// Altera um produto específico por ID.
+        /// </summary> 
+        /// <param name="id">ID do produto.</param>
+        /// <param name="product">Modelo do produto.</param>
+        /// <response code="204">Produto alterado com sucesso.</response>
+        /// <response code="404">Não foi encontrado produto com ID especificado.</response>
         [HttpPut("{id}")]
         public IActionResult Update(int id, [FromBody] Product product)
         {
@@ -57,6 +79,12 @@ namespace ShoplistAPI.Controllers
             return NoContent();
         }
 
+        /// <summary>
+        /// Deleta um produto específico.
+        /// </summary>
+        /// <param name="id">ID do produto.</param>
+        /// <response code="204">Produto deletado com sucesso.</response>
+        /// <response code="404">Não foi encontrado produto com ID especificado.</response>
         [HttpDelete("{id}")]
         public IActionResult DeleteProduct(int id)
         {
