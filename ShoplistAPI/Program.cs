@@ -6,7 +6,10 @@ using System.Reflection;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddDbContext<ShoplistContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("ShoplistConnection")));
+{
+    options.UseSqlServer(builder.Configuration.GetConnectionString("ShoplistConnection"));
+    options.EnableSensitiveDataLogging(true);
+});
 
 // Add services to the container.
 
