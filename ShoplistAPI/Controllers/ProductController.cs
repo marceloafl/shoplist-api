@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using ShoplistAPI.Data;
 using ShoplistAPI.Model;
+using ShoplistAPI.Repository;
 
 namespace ShoplistAPI.Controllers
 {
@@ -8,11 +9,11 @@ namespace ShoplistAPI.Controllers
     [Route("[controller]")]
     public class ProductController: ControllerBase
     {
-        private ShoplistContext _context;
+        private readonly IProductRepository _productRepository;
 
-        public ProductController(ShoplistContext context)
+        public ProductController(IProductRepository productRepository)
         {
-            _context = context;
+            _productRepository = productRepository;
         }
 
         /// <summary>
@@ -20,9 +21,10 @@ namespace ShoplistAPI.Controllers
         /// </summary>
         /// <response code="200">Lista de produtos obtida com sucesso.</response>
         [HttpGet]
-        public IEnumerable<Product> GetAll()
+        public async Task<ActionResult<List<Product>>> GetAll()
         {
-            return _context.Products.ToList();
+            List<Product> products = await _productRepository.GetAll();
+            return Ok(products);
         }
 
         /// <summary>
@@ -32,11 +34,9 @@ namespace ShoplistAPI.Controllers
         /// <response code="200">Produto obtido com sucesso.</response>
         /// <response code="404">Não foi encontrado produto com o ID especificado.</response>
         [HttpGet("{id}")]
-        public IActionResult GetById(int id)
+        public async Task<ActionResult<Product>> GetById(int id)
         {
-            var productWithQueriedId = _context.Products.FirstOrDefault(product => product.Id == id);
-            if (productWithQueriedId == null) return NotFound();
-
+            var productWithQueriedId = await _productRepository.GetById(id);
             return Ok(productWithQueriedId);
         }
 
@@ -46,14 +46,10 @@ namespace ShoplistAPI.Controllers
         /// <param name="product">Modelo do produto.</param>
         /// <response code="201">Produto cadastrado com sucesso.</response>
         [HttpPost]
-        public IActionResult Add([FromBody] Product product)
+        public async Task<ActionResult<Product>> Add([FromBody] Product product)
         {
-            _context.Products.Add(product);
-            _context.SaveChanges();
-            return CreatedAtAction(nameof(GetById),
-                new { id = product.Id },
-                product);
-
+            var newProduct = await _productRepository.Add(product);
+            return Ok(newProduct);
         }
 
         /// <summary>
@@ -64,19 +60,11 @@ namespace ShoplistAPI.Controllers
         /// <response code="204">Produto alterado com sucesso.</response>
         /// <response code="404">Não foi encontrado produto com ID especificado.</response>
         [HttpPut("{id}")]
-        public IActionResult Update(int id, [FromBody] Product product)
+        public async Task<ActionResult<Product>> Update(int id, [FromBody] Product product)
         {
-            var productWithQueriedId = _context.Products.FirstOrDefault(product => product.Id == id);
-            if (productWithQueriedId == null) return NotFound();
-
-            productWithQueriedId.Name = product.Name;
-            productWithQueriedId.Brand = product.Brand;
-            productWithQueriedId.Description = product.Description;
-            productWithQueriedId.Number = product.Number;
-            productWithQueriedId.ShoplistId = product.ShoplistId;
-
-            _context.SaveChanges();
-            return NoContent();
+            product.Id = id;
+            var newProduct = await _productRepository.Update(id, product);
+            return Ok(newProduct);
         }
 
         /// <summary>
@@ -86,14 +74,10 @@ namespace ShoplistAPI.Controllers
         /// <response code="204">Produto deletado com sucesso.</response>
         /// <response code="404">Não foi encontrado produto com ID especificado.</response>
         [HttpDelete("{id}")]
-        public IActionResult DeleteProduct(int id)
+        public async Task<ActionResult<Product>> DeleteShoplist(int id)
         {
-            var productWithQueriedId = _context.Products.FirstOrDefault(product => product.Id == id);
-            if (productWithQueriedId == null) return NotFound();
-
-            _context.Remove(productWithQueriedId);
-            _context.SaveChanges();
-            return NoContent();
+            bool isProductDeleted = await _productRepository.Delete(id);
+            return Ok(isProductDeleted);
         }
     }
 }

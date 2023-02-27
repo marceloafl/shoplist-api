@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using ShoplistAPI.Data;
+using ShoplistAPI.Repository;
 using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -10,6 +11,9 @@ builder.Services.AddDbContext<ShoplistContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("ShoplistConnection"));
     options.EnableSensitiveDataLogging(true);
 });
+
+builder.Services.AddScoped<IShoplistRepository, ShoplistRepository>();
+builder.Services.AddScoped<IProductRepository, ProductRepository>();
 
 // Add services to the container.
 
