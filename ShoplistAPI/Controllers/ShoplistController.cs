@@ -1,5 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Mvc;
 using ShoplistAPI.Data;
+using ShoplistAPI.Data.DTOs;
 using ShoplistAPI.Model;
 using ShoplistAPI.Repository;
 using System.Diagnostics;
@@ -11,10 +13,12 @@ namespace ShoplistAPI.Controllers
     public class ShoplistController: ControllerBase
     {
         private readonly IShoplistRepository _shoplistRepository;
+        private readonly IMapper _mapper;
 
-        public ShoplistController(IShoplistRepository shoplistRepository)
+        public ShoplistController(IShoplistRepository shoplistRepository, IMapper mapper)
         {
             _shoplistRepository = shoplistRepository;
+            _mapper = mapper;
         }
 
         /// <summary>
@@ -22,9 +26,10 @@ namespace ShoplistAPI.Controllers
         /// </summary>
         /// <response code="200">Listagem com listas de compras obtida com sucesso.</response>
         [HttpGet]
-        public async Task<ActionResult<List<Shoplist>>> GetAll()
+        public async Task<ActionResult<List<ShoplistDTO>>> GetAll()
         {
-            List<Shoplist> shoplists = await _shoplistRepository.GetAll();
+            List<ShoplistDTO> shoplists = await _shoplistRepository.GetAll();
+
             return Ok(shoplists);
         }
 
@@ -38,18 +43,23 @@ namespace ShoplistAPI.Controllers
         public async Task<ActionResult<Shoplist>> GetById(int id)
         {
             var shoplistWithQueriedId = await _shoplistRepository.GetById(id);
-            return Ok(shoplistWithQueriedId);
+
+            var searchedShoplist = _mapper.Map<ShoplistDTO>(shoplistWithQueriedId);
+
+            return Ok(searchedShoplist);
         }
 
         /// <summary>
         /// Cadastra uma lista de compras.
         /// </summary>
-        /// <param name="shoplist">Modelo da lista de compras.</param>
+        /// <param name="shoplistDTO">Modelo da lista de compras.</param>
         /// <response code="201">Lista de compras cadastrada com sucesso.</response>
         [HttpPost]
-        public async Task<ActionResult<Shoplist>> Add([FromBody] Shoplist shoplist)
+        public async Task<ActionResult<Shoplist>> Add([FromBody] ShoplistDTO shoplistDTO)
         {
-            var newShoplist = await _shoplistRepository.Add(shoplist);
+            var newShoplist = _mapper.Map<Shoplist>(shoplistDTO);
+            await _shoplistRepository.Add(newShoplist);
+
             return Ok(newShoplist);
         }
 
@@ -61,11 +71,13 @@ namespace ShoplistAPI.Controllers
         /// <response code="204">Lista de compras alterada com sucesso.</response>
         /// <response code="404">Não foi encontrada lista de compras com ID especificado.</response>
         [HttpPut("{id}")]
-        public async Task<ActionResult<Shoplist>> Update(int id, [FromBody] Shoplist shoplist)
+        public async Task<ActionResult<Shoplist>> Update(int id, [FromBody] ShoplistDTO shoplist)
         {
-            shoplist.Id = id;
-            var newShoplist = await _shoplistRepository.Update(id, shoplist);
-            return Ok(newShoplist);
+            var shoplistWithQueriedId = await _shoplistRepository.GetById(id);
+            var shoplistToUpdate = _mapper.Map(shoplist, shoplistWithQueriedId);
+
+            _shoplistRepository.Update(id, shoplistToUpdate);
+            return Ok(shoplist);
         }
 
         /// <summary>
@@ -77,8 +89,10 @@ namespace ShoplistAPI.Controllers
         [HttpDelete("{id}")]
         public async Task<ActionResult<Shoplist>> DeleteShoplist(int id)
         {
-            bool isShopListDeleted = await _shoplistRepository.Delete(id);
-            return Ok(isShopListDeleted);
+
+            var shoplistToDelete = await _shoplistRepository.GetById(id);
+            _shoplistRepository.Delete(shoplistToDelete);
+            return Ok(shoplistToDelete);
         }
     }
 }

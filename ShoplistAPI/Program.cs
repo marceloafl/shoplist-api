@@ -6,16 +6,20 @@ using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Add services to the container.
+
+// Database
 builder.Services.AddDbContext<ShoplistContext>(options =>
 {
     options.UseSqlServer(builder.Configuration.GetConnectionString("ShoplistConnection"));
     options.EnableSensitiveDataLogging(true);
 });
 
+builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+
+// Repository
 builder.Services.AddScoped<IShoplistRepository, ShoplistRepository>();
 builder.Services.AddScoped<IProductRepository, ProductRepository>();
-
-// Add services to the container.
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle

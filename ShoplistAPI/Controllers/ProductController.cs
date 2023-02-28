@@ -1,5 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using ShoplistAPI.Data;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Mvc;
+using ShoplistAPI.Data.DTOs;
 using ShoplistAPI.Model;
 using ShoplistAPI.Repository;
 
@@ -10,25 +11,28 @@ namespace ShoplistAPI.Controllers
     public class ProductController: ControllerBase
     {
         private readonly IProductRepository _productRepository;
+        private readonly IMapper _mapper;
 
-        public ProductController(IProductRepository productRepository)
+        public ProductController(IProductRepository productRepository, IMapper mapper)
         {
             _productRepository = productRepository;
+            _mapper = mapper;
         }
 
         /// <summary>
-        /// Retorna todos os produtos cadastrados
+        /// Retorna listagem com todos os produtos cadastrados
         /// </summary>
-        /// <response code="200">Lista de produtos obtida com sucesso.</response>
+        /// <response code="200">Listagem de produtos obtida com sucesso.</response>
         [HttpGet]
-        public async Task<ActionResult<List<Product>>> GetAll()
+        public async Task<ActionResult<List<ProductDTO>>> GetAll()
         {
-            List<Product> products = await _productRepository.GetAll();
+            List<ProductDTO> products = await _productRepository.GetAll();
+
             return Ok(products);
         }
 
         /// <summary>
-        /// Retorna um produto específico por ID.
+        /// Retorna um produto específio por ID.
         /// </summary>
         /// <param name="id">ID do produto.</param>
         /// <response code="200">Produto obtido com sucesso.</response>
@@ -37,18 +41,23 @@ namespace ShoplistAPI.Controllers
         public async Task<ActionResult<Product>> GetById(int id)
         {
             var productWithQueriedId = await _productRepository.GetById(id);
-            return Ok(productWithQueriedId);
+
+            var searchedProduct = _mapper.Map<ProductDTO>(productWithQueriedId);
+
+            return Ok(searchedProduct);
         }
 
         /// <summary>
         /// Cadastra um produto.
         /// </summary>
-        /// <param name="product">Modelo do produto.</param>
+        /// <param name="productDTO">Modelo de produto.</param>
         /// <response code="201">Produto cadastrado com sucesso.</response>
         [HttpPost]
-        public async Task<ActionResult<Product>> Add([FromBody] Product product)
+        public async Task<ActionResult<Product>> Add([FromBody] ProductDTO productDTO)
         {
-            var newProduct = await _productRepository.Add(product);
+            var newProduct = _mapper.Map<Product>(productDTO);
+            await _productRepository.Add(newProduct);
+
             return Ok(newProduct);
         }
 
@@ -60,11 +69,13 @@ namespace ShoplistAPI.Controllers
         /// <response code="204">Produto alterado com sucesso.</response>
         /// <response code="404">Não foi encontrado produto com ID especificado.</response>
         [HttpPut("{id}")]
-        public async Task<ActionResult<Product>> Update(int id, [FromBody] Product product)
+        public async Task<ActionResult<Product>> Update(int id, [FromBody] ProductDTO product)
         {
-            product.Id = id;
-            var newProduct = await _productRepository.Update(id, product);
-            return Ok(newProduct);
+            var productWithQueriedId = await _productRepository.GetById(id);
+            var productToUpdate = _mapper.Map(product, productWithQueriedId);
+
+            _productRepository.Update(id, productToUpdate);
+            return Ok(product);
         }
 
         /// <summary>
@@ -74,10 +85,12 @@ namespace ShoplistAPI.Controllers
         /// <response code="204">Produto deletado com sucesso.</response>
         /// <response code="404">Não foi encontrado produto com ID especificado.</response>
         [HttpDelete("{id}")]
-        public async Task<ActionResult<Product>> DeleteShoplist(int id)
+        public async Task<ActionResult<Product>> DeleteProduct(int id)
         {
-            bool isProductDeleted = await _productRepository.Delete(id);
-            return Ok(isProductDeleted);
+
+            var productToDelete = await _productRepository.GetById(id);
+            _productRepository.Delete(productToDelete);
+            return Ok(productToDelete);
         }
     }
 }

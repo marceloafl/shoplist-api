@@ -1,5 +1,7 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using AutoMapper;
+using Microsoft.EntityFrameworkCore;
 using ShoplistAPI.Data;
+using ShoplistAPI.Data.DTOs;
 using ShoplistAPI.Model;
 
 namespace ShoplistAPI.Repository
@@ -9,14 +11,23 @@ namespace ShoplistAPI.Repository
 
         private readonly ShoplistContext _context;
 
+
         public ShoplistRepository(ShoplistContext shoplistContext)
         {
             _context = shoplistContext;
         }
 
-        public async Task<List<Shoplist>> GetAll()
+        public async Task<List<ShoplistDTO>> GetAll()
         {
-            return await _context.Shoplists.ToListAsync();
+            return await _context.Shoplists
+                .Select(sl => new ShoplistDTO
+                {
+                    Id = sl.Id,
+                    Name = sl.Name,
+                    Description = sl.Description,
+                    Products = sl.Products,
+                })
+                .ToListAsync();
         }
 
         public async Task<Shoplist> GetById(int id)
@@ -26,44 +37,22 @@ namespace ShoplistAPI.Repository
 
         public async Task<Shoplist> Add(Shoplist shoplist)
         {
-            await _context.Shoplists.AddAsync(shoplist);
-            await _context.SaveChangesAsync();
+            await _context.AddAsync(shoplist);
+            _context.SaveChanges();
             return shoplist;
         }
 
-        public async Task<Shoplist> Update(int id, Shoplist shoplist)
+        public async void Update(int id, Shoplist shoplist)
         {
-            var shoplistWithQueriedId = await GetById(id);
-
-            if (shoplistWithQueriedId == null)
-            {
-                throw new Exception($"Não foi possível encontrar lista de compras com o ID {id}.");
-            }
-
-            shoplistWithQueriedId.Name = shoplist.Name;
-            shoplistWithQueriedId.Description = shoplist.Description;
-            shoplistWithQueriedId.Products = shoplist.Products;
-
-            _context.Shoplists.Update(shoplistWithQueriedId);
-            await _context.SaveChangesAsync();
-
-            return shoplistWithQueriedId;
+            shoplist.Id = id;
+            _context.Update(shoplist);
+            _context.SaveChanges();
         }
 
-        public async Task<bool> Delete(int id)
+        public void Delete(Shoplist shoplist)
         {
-            var shoplistWithQueriedId = await GetById(id);
-
-            if (shoplistWithQueriedId == null)
-            {
-                throw new Exception($"Não foi possível encontrar lista de compras com o ID {id}.");
-            }
-
-            _context.Shoplists.Remove(shoplistWithQueriedId);
-            await _context.SaveChangesAsync();
-
-            return true;
+            _context.Remove(shoplist);
+            _context.SaveChanges();
         }
-
     }
 }

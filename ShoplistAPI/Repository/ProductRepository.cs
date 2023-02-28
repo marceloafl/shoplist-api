@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using ShoplistAPI.Data;
+using ShoplistAPI.Data.DTOs;
 using ShoplistAPI.Model;
 
 namespace ShoplistAPI.Repository
@@ -13,9 +14,19 @@ namespace ShoplistAPI.Repository
             _context = shoplistContext;
         }
 
-        public async Task<List<Product>> GetAll()
+        public async Task<List<ProductDTO>> GetAll()
         {
-            return await _context.Products.ToListAsync();
+            return await _context.Products
+                .Select(p => new ProductDTO
+                {
+                    Id = p.Id,
+                    Name = p.Name,
+                    Brand = p.Brand,
+                    Description = p.Description,
+                    Number = p.Number,
+                    ShoplistId = p.ShoplistId
+                })
+                .ToListAsync();
         }
 
         public async Task<Product> GetById(int id)
@@ -25,45 +36,22 @@ namespace ShoplistAPI.Repository
 
         public async Task<Product> Add(Product product)
         {
-            await _context.Products.AddAsync(product);
-            await _context.SaveChangesAsync();
+            await _context.AddAsync(product);
+            _context.SaveChanges();
             return product;
         }
 
-        public async Task<Product> Update(int id, Product product)
+        public async void Update(int id, Product product)
         {
-            var productWithQueriedId = await GetById(id);
-
-            if (productWithQueriedId == null)
-            {
-                throw new Exception($"Não foi possível encontrar produto com o ID {id}.");
-            }
-
-            productWithQueriedId.Name = product.Name;
-            productWithQueriedId.Brand = product.Brand;
-            productWithQueriedId.Description = product.Description;
-            productWithQueriedId.Number = product.Number;
-            productWithQueriedId.ShoplistId = product.ShoplistId;
-
-            _context.Products.Update(productWithQueriedId);
-            await _context.SaveChangesAsync();
-
-            return productWithQueriedId;
+            product.Id = id;
+            _context.Update(product);
+            _context.SaveChanges();
         }
 
-        public async Task<bool> Delete(int id)
+        public void Delete(Product product)
         {
-            var productWithQueriedId = await GetById(id);
-
-            if (productWithQueriedId == null)
-            {
-                throw new Exception($"Não foi possível encontrar produto com o ID {id}.");
-            }
-
-            _context.Products.Remove(productWithQueriedId);
-            await _context.SaveChangesAsync();
-
-            return true;
+            _context.Remove(product);
+            _context.SaveChanges();
         }
     }
 }

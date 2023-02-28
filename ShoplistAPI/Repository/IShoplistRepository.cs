@@ -1,13 +1,14 @@
-﻿using ShoplistAPI.Model;
+﻿using ShoplistAPI.Data.DTOs;
+using ShoplistAPI.Model;
 
 namespace ShoplistAPI.Repository
 {
     public interface IShoplistRepository
     {
-        Task<List<Shoplist>> GetAll();
+        Task<List<ShoplistDTO>> GetAll();
         Task<Shoplist> GetById(int id);
         Task<Shoplist> Add(Shoplist shoplist);
-        Task<Shoplist> Update(int id, Shoplist shoplist);
-        Task<bool> Delete(int id);
+        void Update(int id, Shoplist shoplist);
+        void Delete(Shoplist shoplist);
     }
 }
