@@ -46,7 +46,7 @@ namespace ShoplistAPI.Controllers
 
             var searchedShoplist = _mapper.Map<ShoplistDTO>(shoplistWithQueriedId);
 
-            return Ok(searchedShoplist);
+            return searchedShoplist == null ? NotFound() : Ok(searchedShoplist);
         }
 
         /// <summary>
@@ -57,10 +57,21 @@ namespace ShoplistAPI.Controllers
         [HttpPost]
         public async Task<ActionResult<Shoplist>> Add([FromBody] ShoplistDTO shoplistDTO)
         {
-            var newShoplist = _mapper.Map<Shoplist>(shoplistDTO);
-            await _shoplistRepository.Add(newShoplist);
+            try
+            {
+                var newShoplist = _mapper.Map<Shoplist>(shoplistDTO);
+                await _shoplistRepository.Add(newShoplist);
 
-            return Ok(newShoplist);
+                return CreatedAtAction(
+                    nameof(GetById),
+                    new { id = newShoplist.Id },
+                    newShoplist
+                    );
+            }
+            catch (Exception e)
+            {
+                return BadRequest(e.Message);
+            }
         }
 
         /// <summary>
@@ -77,7 +88,8 @@ namespace ShoplistAPI.Controllers
             var shoplistToUpdate = _mapper.Map(shoplist, shoplistWithQueriedId);
 
             _shoplistRepository.Update(id, shoplistToUpdate);
-            return Ok(shoplist);
+
+            return shoplistToUpdate == null ? NotFound() : Ok(shoplist);
         }
 
         /// <summary>
@@ -89,10 +101,13 @@ namespace ShoplistAPI.Controllers
         [HttpDelete("{id}")]
         public async Task<ActionResult<Shoplist>> DeleteShoplist(int id)
         {
-
             var shoplistToDelete = await _shoplistRepository.GetById(id);
+        
+            if (shoplistToDelete == null) return NotFound("Não foi encontrada lista de compras com ID especificado");
+
             _shoplistRepository.Delete(shoplistToDelete);
-            return Ok(shoplistToDelete);
+            return Ok("Lista de compras deletada com sucesso.");
+
         }
     }
 }

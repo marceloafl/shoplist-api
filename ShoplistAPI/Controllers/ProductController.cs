@@ -44,7 +44,7 @@ namespace ShoplistAPI.Controllers
 
             var searchedProduct = _mapper.Map<ProductDTO>(productWithQueriedId);
 
-            return Ok(searchedProduct);
+            return searchedProduct == null ? NotFound() : Ok(searchedProduct);
         }
 
         /// <summary>
@@ -55,10 +55,21 @@ namespace ShoplistAPI.Controllers
         [HttpPost]
         public async Task<ActionResult<Product>> Add([FromBody] ProductDTO productDTO)
         {
-            var newProduct = _mapper.Map<Product>(productDTO);
-            await _productRepository.Add(newProduct);
+            try
+            {
+                var newProduct = _mapper.Map<Product>(productDTO);
+                await _productRepository.Add(newProduct);
 
-            return Ok(newProduct);
+                return CreatedAtAction(
+                nameof(GetById),
+                new { id = newProduct.Id },
+                newProduct
+                );
+            }
+            catch (Exception e)
+            {
+                return BadRequest(e.Message);
+            }
         }
 
         /// <summary>
@@ -75,7 +86,8 @@ namespace ShoplistAPI.Controllers
             var productToUpdate = _mapper.Map(product, productWithQueriedId);
 
             _productRepository.Update(id, productToUpdate);
-            return Ok(product);
+
+            return productToUpdate == null ? NotFound() : Ok(product);
         }
 
         /// <summary>
@@ -87,10 +99,12 @@ namespace ShoplistAPI.Controllers
         [HttpDelete("{id}")]
         public async Task<ActionResult<Product>> DeleteProduct(int id)
         {
-
             var productToDelete = await _productRepository.GetById(id);
+            if (productToDelete == null) return NotFound("Não foi encontrado produto com ID especificado.");
+
+
             _productRepository.Delete(productToDelete);
-            return Ok(productToDelete);
+            return Ok("Produto deletado com sucesso.");
         }
     }
 }

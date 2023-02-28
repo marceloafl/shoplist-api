@@ -11,7 +11,6 @@ namespace ShoplistAPI.Repository
 
         private readonly ShoplistContext _context;
 
-
         public ShoplistRepository(ShoplistContext shoplistContext)
         {
             _context = shoplistContext;
