@@ -6,6 +6,7 @@ using ShoplistAPI.Repository;
 
 namespace ShoplistAPI.Controllers
 {
+    [Produces("application/json")]
     [ApiController]
     [Route("[controller]")]
     public class ProductController: ControllerBase
@@ -24,6 +25,7 @@ namespace ShoplistAPI.Controllers
         /// </summary>
         /// <response code="200">Listagem de produtos obtida com sucesso.</response>
         [HttpGet]
+        [ProducesResponseType(typeof(ProductDTO), StatusCodes.Status200OK)]
         public async Task<ActionResult<List<ProductDTO>>> GetAll()
         {
             List<ProductDTO> products = await _productRepository.GetAll();
@@ -38,6 +40,8 @@ namespace ShoplistAPI.Controllers
         /// <response code="200">Produto obtido com sucesso.</response>
         /// <response code="404">Não foi encontrado produto com o ID especificado.</response>
         [HttpGet("{id}")]
+        [ProducesResponseType(typeof(ProductDTO), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<Product>> GetById(int id)
         {
             var productWithQueriedId = await _productRepository.GetById(id);
@@ -53,6 +57,8 @@ namespace ShoplistAPI.Controllers
         /// <param name="productDTO">Modelo de produto.</param>
         /// <response code="201">Produto cadastrado com sucesso.</response>
         [HttpPost]
+        [ProducesResponseType(StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<Product>> Add([FromBody] ProductDTO productDTO)
         {
             try
@@ -80,6 +86,7 @@ namespace ShoplistAPI.Controllers
         /// <response code="204">Produto alterado com sucesso.</response>
         /// <response code="404">Não foi encontrado produto com ID especificado.</response>
         [HttpPut("{id}")]
+        [ApiConventionMethod(typeof(DefaultApiConventions), nameof(DefaultApiConventions.Put))]
         public async Task<ActionResult<Product>> Update(int id, [FromBody] ProductDTO product)
         {
             var productWithQueriedId = await _productRepository.GetById(id);
@@ -97,6 +104,7 @@ namespace ShoplistAPI.Controllers
         /// <response code="204">Produto deletado com sucesso.</response>
         /// <response code="404">Não foi encontrado produto com ID especificado.</response>
         [HttpDelete("{id}")]
+        [ApiConventionMethod(typeof(DefaultApiConventions), nameof(DefaultApiConventions.Delete))]
         public async Task<ActionResult<Product>> DeleteProduct(int id)
         {
             var productToDelete = await _productRepository.GetById(id);

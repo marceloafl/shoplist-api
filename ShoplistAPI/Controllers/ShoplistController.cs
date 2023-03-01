@@ -8,6 +8,8 @@ using System.Diagnostics;
 
 namespace ShoplistAPI.Controllers
 {
+    [ApiConventionType(typeof(DefaultApiConventions))]
+    [Produces("application/json")]
     [ApiController]
     [Route("[controller]")]
     public class ShoplistController: ControllerBase
