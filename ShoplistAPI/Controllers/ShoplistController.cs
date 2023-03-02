@@ -109,7 +109,6 @@ namespace ShoplistAPI.Controllers
 
             _shoplistRepository.Delete(shoplistToDelete);
             return Ok("Lista de compras deletada com sucesso.");
-
         }
     }
 }
