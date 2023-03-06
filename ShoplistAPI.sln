@@ -3,7 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.4.33213.308
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShoplistAPI", "ShoplistAPI\ShoplistAPI.csproj", "{46F17D14-0892-4AD8-AA63-991F66591828}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ShoplistAPI", "ShoplistAPI\ShoplistAPI.csproj", "{46F17D14-0892-4AD8-AA63-991F66591828}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShoplistAPIxUnitTests", "ShoplistAPIxUnitTests\ShoplistAPIxUnitTests.csproj", "{C8C0B210-D9DC-4BF7-A47F-0AFD6B7AAA40}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +17,10 @@ Global
 		{46F17D14-0892-4AD8-AA63-991F66591828}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{46F17D14-0892-4AD8-AA63-991F66591828}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{46F17D14-0892-4AD8-AA63-991F66591828}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C8C0B210-D9DC-4BF7-A47F-0AFD6B7AAA40}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C8C0B210-D9DC-4BF7-A47F-0AFD6B7AAA40}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C8C0B210-D9DC-4BF7-A47F-0AFD6B7AAA40}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C8C0B210-D9DC-4BF7-A47F-0AFD6B7AAA40}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

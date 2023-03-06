@@ -31,7 +31,7 @@ namespace ShoplistAPI.Repository
 
         public async Task<Shoplist> GetById(int id)
         {
-            return await _context.Shoplists.FirstOrDefaultAsync(sl => sl.Id == id);
+            return await _context.Shoplists.Include(sl => sl.Products).FirstOrDefaultAsync(sl => sl.Id == id);
         }
 
         public async Task<Shoplist> Add(Shoplist shoplist)

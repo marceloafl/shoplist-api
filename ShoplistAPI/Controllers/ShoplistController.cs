@@ -30,9 +30,16 @@ namespace ShoplistAPI.Controllers
         [HttpGet]
         public async Task<ActionResult<List<ShoplistDTO>>> GetAll()
         {
-            List<ShoplistDTO> shoplists = await _shoplistRepository.GetAll();
+            try
+            {
+                List<ShoplistDTO> shoplists = await _shoplistRepository.GetAll();
+                return Ok(shoplists);
+            }
+            catch(Exception)
+            {
+                return BadRequest();
+            }
 
-            return Ok(shoplists);
         }
 
         /// <summary>
@@ -42,7 +49,7 @@ namespace ShoplistAPI.Controllers
         /// <response code="200">Lista de compras obtida com sucesso.</response>
         /// <response code="404">Não foi encontrado lista de compras com o ID especificado.</response>
         [HttpGet("{id}")]
-        public async Task<ActionResult<Shoplist>> GetById(int id)
+        public async Task<ActionResult<ShoplistDTO>> GetById(int id)
         {
             var shoplistWithQueriedId = await _shoplistRepository.GetById(id);
 
