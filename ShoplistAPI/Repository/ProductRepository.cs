@@ -26,6 +26,7 @@ namespace ShoplistAPI.Repository
                     Number = p.Number,
                     ShoplistId = p.ShoplistId
                 })
+                .AsNoTracking()
                 .ToListAsync();
         }
 

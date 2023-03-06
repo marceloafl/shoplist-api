@@ -26,6 +26,7 @@ namespace ShoplistAPI.Repository
                     Description = sl.Description,
                     Products = sl.Products,
                 })
+                .AsNoTracking()
                 .ToListAsync();
         }
 
