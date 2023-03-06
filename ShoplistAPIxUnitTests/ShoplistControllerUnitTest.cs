@@ -113,15 +113,77 @@ namespace ShoplistAPIxUnitTests
             { Name = "Teste unitário post de lista", Description = "Teste unitário inclusão de lista" };
 
             // Act
-            var data = controller.Add(newShoplist);
+            var data = await controller.Add(newShoplist);
 
             // Assert
-            Assert.IsType<ActionResult<Shoplist>>(data.Result);
+            Assert.IsType<ActionResult<Shoplist>>(data);
+        }
+
+        [Fact(DisplayName = "PUT Shoplist - OkResult")]
+        public async void PutShoplist_ReturnOkResult()
+        {
+            // Arrange
+            var controller = new ShoplistController(shoplistRepository, mapper);
+            var shoplistId = 5;
+
+            // Act
+            var exinstingShoplist = await controller.GetById(shoplistId);
+            var result = exinstingShoplist.Should().BeAssignableTo<ActionResult<ShoplistDTO>>().Subject;
+
+            var shoplistDTO = new ShoplistDTO();
+            shoplistDTO.Id = shoplistId;
+            shoplistDTO.Name = $"Shoplist com id: {shoplistId} atualizada";
+            shoplistDTO.Description = $"Descrição da shoplist com id: {shoplistId} atualizada";
+
+            var updatedData = await controller.Update(shoplistId, shoplistDTO);
+
+            // Assert
+            Assert.IsType<ActionResult<ShoplistDTO>>(updatedData);
+        }
+
+        [Fact(DisplayName = "PUT Shoplist - NotFoundResult")]
+        public async void PutShoplist_ReturnNotFoundkResult()
+        {
+            // Arrange
+            var controller = new ShoplistController(shoplistRepository, mapper);
+            var shoplistId = 9999;
+
+            // Act
+            var data = await controller.GetById(shoplistId);
+
+            // Assert
+            Assert.IsType<NotFoundResult>(data.Result);
         }
 
         // Teste PUT
 
-        // Teste DELETE
-        
+        [Fact(DisplayName = "DELETE Shoplist - OkResult")]
+        public async void DeleteShoplist_ReturnOkResult()
+        {
+            // Arrange
+            var controller = new ShoplistController(shoplistRepository, mapper);
+            var shoplistId = 5;
+
+            // Act
+            var data = await controller.DeleteShoplist(shoplistId);
+
+            // Assert
+            Assert.IsType<OkObjectResult>(data);
+        }
+
+        [Fact(DisplayName = "DELETE Shoplist - NotFoundResult")]
+        public async void DeleteShoplist_ReturnNotFoundResult()
+        {
+            // Arrange
+            var controller = new ShoplistController(shoplistRepository, mapper);
+            var shoplistId = 9999;
+
+            // Act
+            var data = await controller.DeleteShoplist(shoplistId);
+
+            // Assert
+            Assert.IsType<NotFoundObjectResult>(data);
+        }
+
     }
 }

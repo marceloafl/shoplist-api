@@ -91,7 +91,7 @@ namespace ShoplistAPI.Controllers
         /// <response code="204">Lista de compras alterada com sucesso.</response>
         /// <response code="404">Não foi encontrada lista de compras com ID especificado.</response>
         [HttpPut("{id}")]
-        public async Task<ActionResult<Shoplist>> Update(int id, [FromBody] ShoplistDTO shoplist)
+        public async Task<ActionResult<ShoplistDTO>> Update(int id, [FromBody] ShoplistDTO shoplist)
         {
             var shoplistWithQueriedId = await _shoplistRepository.GetById(id);
             var shoplistToUpdate = _mapper.Map(shoplist, shoplistWithQueriedId);
@@ -108,7 +108,7 @@ namespace ShoplistAPI.Controllers
         /// <response code="204">Lista de compras deletada com sucesso.</response>
         /// <response code="404">Não foi encontrada lista de compras com ID especificado.</response>
         [HttpDelete("{id}")]
-        public async Task<ActionResult<Shoplist>> DeleteShoplist(int id)
+        public async Task<ActionResult> DeleteShoplist(int id)
         {
             var shoplistToDelete = await _shoplistRepository.GetById(id);
         
