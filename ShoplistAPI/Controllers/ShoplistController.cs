@@ -1,10 +1,8 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
-using ShoplistAPI.Data;
 using ShoplistAPI.Data.DTOs;
 using ShoplistAPI.Model;
 using ShoplistAPI.Repository;
-using System.Diagnostics;
 
 namespace ShoplistAPI.Controllers
 {
@@ -14,12 +12,12 @@ namespace ShoplistAPI.Controllers
     [Route("[controller]")]
     public class ShoplistController: ControllerBase
     {
-        private readonly IShoplistRepository _shoplistRepository;
+        private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
 
-        public ShoplistController(IShoplistRepository shoplistRepository, IMapper mapper)
+        public ShoplistController(IUnitOfWork context, IMapper mapper)
         {
-            _shoplistRepository = shoplistRepository;
+            _unitOfWork = context;
             _mapper = mapper;
         }
 
@@ -27,14 +25,16 @@ namespace ShoplistAPI.Controllers
         /// Retorna listagem com todas as listas de compras cadastradas
         /// </summary>
         /// <response code="200">Listagem com listas de compras obtida com sucesso.</response>
+        /// <response code="400">Ocorreu um erro ao tentar processar a solicitação.</response>
         [HttpGet]
-        public async Task<ActionResult<List<ShoplistDTO>>> GetAll()
+        public ActionResult<IQueryable<ShoplistDTO>> GetAll()
         {
             try
             {
-                List<ShoplistDTO> shoplists = await _shoplistRepository.GetAll();
-                return Ok(shoplists);
-            }
+                var shoplists = _unitOfWork.ShoplistRepository.GetAll().ToList();
+                var shoplistDto = _mapper.Map<List<ShoplistDTO>>(shoplists);
+                return Ok(shoplistDto);
+        }
             catch(Exception)
             {
                 return BadRequest();
@@ -49,32 +49,36 @@ namespace ShoplistAPI.Controllers
         /// <response code="200">Lista de compras obtida com sucesso.</response>
         /// <response code="404">Não foi encontrado lista de compras com o ID especificado.</response>
         [HttpGet("{id}")]
-        public async Task<ActionResult<ShoplistDTO>> GetById(int id)
+        public ActionResult<ShoplistDTO> GetById(int id)
         {
-            var shoplistWithQueriedId = await _shoplistRepository.GetById(id);
+            var shoplistWithQueriedId = _unitOfWork.ShoplistRepository.GetById(sl => sl.Id == id);
+
+            if (shoplistWithQueriedId == null) return NotFound();
 
             var searchedShoplist = _mapper.Map<ShoplistDTO>(shoplistWithQueriedId);
-
-            return searchedShoplist == null ? NotFound() : Ok(searchedShoplist);
+            return Ok(searchedShoplist);
         }
 
         /// <summary>
         /// Cadastra uma lista de compras.
         /// </summary>
-        /// <param name="shoplistDTO">Modelo da lista de compras.</param>
+        /// <param name="shoplistDto">Modelo da lista de compras.</param>
         /// <response code="201">Lista de compras cadastrada com sucesso.</response>
         [HttpPost]
-        public async Task<ActionResult<Shoplist>> Add([FromBody] ShoplistDTO shoplistDTO)
+        public ActionResult<ShoplistDTO> Add([FromBody] ShoplistDTO shoplistDto)
         {
             try
             {
-                var newShoplist = _mapper.Map<Shoplist>(shoplistDTO);
-                await _shoplistRepository.Add(newShoplist);
+                var newShoplist = _mapper.Map<Shoplist>(shoplistDto);
+                _unitOfWork.ShoplistRepository.Add(newShoplist);
+                _unitOfWork.Commit();
+
+                var newShoplistDto = _mapper.Map<ShoplistDTO>(newShoplist);
 
                 return CreatedAtAction(
                     nameof(GetById),
                     new { id = newShoplist.Id },
-                    newShoplist
+                    newShoplistDto
                     );
             }
             catch (Exception e)
@@ -86,19 +90,22 @@ namespace ShoplistAPI.Controllers
         /// <summary>
         /// Altera uma lista de compras específica por ID.
         /// </summary> 
-        /// <param name="shoplist">ID da lista de compras.</param>
-        /// <param name="shoplist">Modelo da lista de compras.</param>
+        /// <param name="id">ID da lista de compras.</param>
+        /// <param name="shoplistDto">Modelo da lista de compras.</param>
         /// <response code="204">Lista de compras alterada com sucesso.</response>
-        /// <response code="404">Não foi encontrada lista de compras com ID especificado.</response>
+        /// <response code="400">O id especificado e o id da lista de compras não são iguais.</response>
         [HttpPut("{id}")]
-        public async Task<ActionResult<ShoplistDTO>> Update(int id, [FromBody] ShoplistDTO shoplist)
+        public ActionResult<ShoplistDTO> Update(int id, [FromBody] ShoplistDTO shoplistDto)
         {
-            var shoplistWithQueriedId = await _shoplistRepository.GetById(id);
-            var shoplistToUpdate = _mapper.Map(shoplist, shoplistWithQueriedId);
+            if (id != shoplistDto.Id) return BadRequest();
 
-            _shoplistRepository.Update(id, shoplistToUpdate);
+            var shoplistChanged = _mapper.Map<Shoplist>(shoplistDto);
 
-            return shoplistToUpdate == null ? NotFound() : Ok(shoplist);
+            _unitOfWork.ShoplistRepository.Update(shoplistChanged);
+            _unitOfWork.Commit();
+
+            var shoplistChangedDto = _mapper.Map<ShoplistDTO>(shoplistChanged);
+            return Ok(shoplistChangedDto);
         }
 
         /// <summary>
@@ -108,13 +115,15 @@ namespace ShoplistAPI.Controllers
         /// <response code="204">Lista de compras deletada com sucesso.</response>
         /// <response code="404">Não foi encontrada lista de compras com ID especificado.</response>
         [HttpDelete("{id}")]
-        public async Task<ActionResult> DeleteShoplist(int id)
+        public ActionResult<ShoplistDTO> DeleteShoplist(int id)
         {
-            var shoplistToDelete = await _shoplistRepository.GetById(id);
+            var shoplistToDelete = _unitOfWork.ShoplistRepository.GetById(sl => sl.Id == id);
         
             if (shoplistToDelete == null) return NotFound("Não foi encontrada lista de compras com ID especificado");
 
-            _shoplistRepository.Delete(shoplistToDelete);
+            _unitOfWork.ShoplistRepository.Delete(shoplistToDelete);
+            _unitOfWork.Commit();
+
             return Ok("Lista de compras deletada com sucesso.");
         }
     }

@@ -11,12 +11,12 @@ namespace ShoplistAPI.Controllers
     [Route("[controller]")]
     public class ProductController: ControllerBase
     {
-        private readonly IProductRepository _productRepository;
+        private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
 
-        public ProductController(IProductRepository productRepository, IMapper mapper)
+        public ProductController(IUnitOfWork context, IMapper mapper)
         {
-            _productRepository = productRepository;
+            _unitOfWork = context;
             _mapper = mapper;
         }
 
@@ -24,13 +24,21 @@ namespace ShoplistAPI.Controllers
         /// Retorna listagem com todos os produtos cadastrados
         /// </summary>
         /// <response code="200">Listagem de produtos obtida com sucesso.</response>
+        /// /// <response code="400">Ocorreu um erro ao tentar processar a solicitação.</response>
         [HttpGet]
         [ProducesResponseType(typeof(ProductDTO), StatusCodes.Status200OK)]
-        public async Task<ActionResult<List<ProductDTO>>> GetAll()
+        public ActionResult<IQueryable<ProductDTO>> GetAll()
         {
-            List<ProductDTO> products = await _productRepository.GetAll();
-
-            return Ok(products);
+            try
+            {
+                var products = _unitOfWork.ProductRepository.GetAll().ToList();
+                var productDto = _mapper.Map<List<ProductDTO>>(products);
+                return Ok(productDto);
+            }
+            catch (Exception)
+            {
+                return BadRequest();
+            }
         }
 
         /// <summary>
@@ -42,34 +50,38 @@ namespace ShoplistAPI.Controllers
         [HttpGet("{id}")]
         [ProducesResponseType(typeof(ProductDTO), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<Product>> GetById(int id)
+        public ActionResult<ProductDTO> GetById(int id)
         {
-            var productWithQueriedId = await _productRepository.GetById(id);
+            var productWithQueriedId = _unitOfWork.ProductRepository.GetById(p => p.Id == id);
+            
+            if (productWithQueriedId == null) return NotFound();
 
             var searchedProduct = _mapper.Map<ProductDTO>(productWithQueriedId);
-
-            return searchedProduct == null ? NotFound() : Ok(searchedProduct);
+            return Ok(searchedProduct);
         }
 
         /// <summary>
         /// Cadastra um produto.
         /// </summary>
-        /// <param name="productDTO">Modelo de produto.</param>
+        /// <param name="productDto">Modelo de produto.</param>
         /// <response code="201">Produto cadastrado com sucesso.</response>
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult<Product>> Add([FromBody] ProductDTO productDTO)
+        public ActionResult<ProductDTO> Add([FromBody] ProductDTO productDto)
         {
             try
             {
-                var newProduct = _mapper.Map<Product>(productDTO);
-                await _productRepository.Add(newProduct);
+                var newProduct = _mapper.Map<Product>(productDto);
+                _unitOfWork.ProductRepository.Add(newProduct);
+                _unitOfWork.Commit();
+
+                var newProductDto = _mapper.Map<ProductDTO>(newProduct);
 
                 return CreatedAtAction(
                 nameof(GetById),
                 new { id = newProduct.Id },
-                newProduct
+                newProductDto
                 );
             }
             catch (Exception e)
@@ -82,19 +94,22 @@ namespace ShoplistAPI.Controllers
         /// Altera um produto específico por ID.
         /// </summary> 
         /// <param name="id">ID do produto.</param>
-        /// <param name="product">Modelo do produto.</param>
+        /// <param name="productDto">Modelo do produto.</param>
         /// <response code="204">Produto alterado com sucesso.</response>
         /// <response code="404">Não foi encontrado produto com ID especificado.</response>
         [HttpPut("{id}")]
         [ApiConventionMethod(typeof(DefaultApiConventions), nameof(DefaultApiConventions.Put))]
-        public async Task<ActionResult<Product>> Update(int id, [FromBody] ProductDTO product)
+        public ActionResult<Product> Update(int id, [FromBody] ProductDTO productDto)
         {
-            var productWithQueriedId = await _productRepository.GetById(id);
-            var productToUpdate = _mapper.Map(product, productWithQueriedId);
+            if (id != productDto.Id) return BadRequest();
 
-            _productRepository.Update(id, productToUpdate);
+            var productChanged = _mapper.Map<Product>(productDto);
 
-            return productToUpdate == null ? NotFound() : Ok(product);
+            _unitOfWork.ProductRepository.Update(productChanged);
+            _unitOfWork.Commit();
+
+            var productChangedDto = _mapper.Map<ProductDTO>(productChanged);
+            return Ok(productChangedDto);
         }
 
         /// <summary>
@@ -105,13 +120,16 @@ namespace ShoplistAPI.Controllers
         /// <response code="404">Não foi encontrado produto com ID especificado.</response>
         [HttpDelete("{id}")]
         [ApiConventionMethod(typeof(DefaultApiConventions), nameof(DefaultApiConventions.Delete))]
-        public async Task<ActionResult<Product>> DeleteProduct(int id)
+        public ActionResult<Product> DeleteProduct(int id)
         {
-            var productToDelete = await _productRepository.GetById(id);
+            var productToDelete = _unitOfWork.ProductRepository.GetById(p => p.Id == id);
+
             if (productToDelete == null) return NotFound("Não foi encontrado produto com ID especificado.");
 
 
-            _productRepository.Delete(productToDelete);
+            _unitOfWork.ProductRepository.Delete(productToDelete);
+            _unitOfWork.Commit();
+
             return Ok("Produto deletado com sucesso.");
         }
     }
