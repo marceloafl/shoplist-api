@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using ShoplistAPI.Data.DTOs;
 using ShoplistAPI.Model;
 using ShoplistAPI.Repository;
@@ -31,7 +32,18 @@ namespace ShoplistAPI.Controllers
         {
             try
             {
-                var shoplists = _unitOfWork.ShoplistRepository.GetAll().ToList();
+                var shoplists = _unitOfWork.ShoplistRepository
+                    .GetAll()
+                    .Select(sl => new Shoplist
+                    {
+                        Id = sl.Id,
+                        Name = sl.Name,
+                        Description = sl.Description,
+                        Products = sl.Products,
+                    })
+                    .AsNoTracking()
+                    .ToList();
+
                 var shoplistDto = _mapper.Map<List<ShoplistDTO>>(shoplists);
                 return Ok(shoplistDto);
         }

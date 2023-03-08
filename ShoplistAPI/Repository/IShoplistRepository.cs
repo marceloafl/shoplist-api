@@ -5,10 +5,5 @@ namespace ShoplistAPI.Repository
 {
     public interface IShoplistRepository : IRepository<Shoplist>
     {
-        //Task<List<ShoplistDTO>> GetAll();
-        //Task<Shoplist> GetById(int id);
-        //Task<Shoplist> Add(Shoplist shoplist);
-        //void Update(int id, Shoplist shoplist);
-        //void Delete(Shoplist shoplist);
     }
 }
