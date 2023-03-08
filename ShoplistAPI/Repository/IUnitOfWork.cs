@@ -4,6 +4,6 @@
     {
         IShoplistRepository ShoplistRepository { get; }
         IProductRepository ProductRepository { get; }
-        void Commit ();
+        Task Commit ();
     }
 }

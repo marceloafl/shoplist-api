@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using ShoplistAPI.Data.DTOs;
 using ShoplistAPI.Model;
 using ShoplistAPI.Repository;
@@ -27,11 +28,11 @@ namespace ShoplistAPI.Controllers
         /// /// <response code="400">Ocorreu um erro ao tentar processar a solicitação.</response>
         [HttpGet]
         [ProducesResponseType(typeof(ProductDTO), StatusCodes.Status200OK)]
-        public ActionResult<IQueryable<ProductDTO>> GetAll()
+        public async Task<ActionResult<IQueryable<ProductDTO>>> GetAll()
         {
             try
             {
-                var products = _unitOfWork.ProductRepository.GetAll().ToList();
+                var products = await _unitOfWork.ProductRepository.GetAll().AsNoTracking().ToListAsync();
                 var productDto = _mapper.Map<List<ProductDTO>>(products);
                 return Ok(productDto);
             }
@@ -50,9 +51,9 @@ namespace ShoplistAPI.Controllers
         [HttpGet("{id}")]
         [ProducesResponseType(typeof(ProductDTO), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public ActionResult<ProductDTO> GetById(int id)
+        public async Task<ActionResult<ProductDTO>> GetById(int id)
         {
-            var productWithQueriedId = _unitOfWork.ProductRepository.GetById(p => p.Id == id);
+            var productWithQueriedId = await _unitOfWork.ProductRepository.GetById(p => p.Id == id);
             
             if (productWithQueriedId == null) return NotFound();
 
@@ -68,13 +69,13 @@ namespace ShoplistAPI.Controllers
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public ActionResult<ProductDTO> Add([FromBody] ProductDTO productDto)
+        public async Task<ActionResult<ProductDTO>> Add([FromBody] ProductDTO productDto)
         {
             try
             {
                 var newProduct = _mapper.Map<Product>(productDto);
                 _unitOfWork.ProductRepository.Add(newProduct);
-                _unitOfWork.Commit();
+                await _unitOfWork.Commit();
 
                 var newProductDto = _mapper.Map<ProductDTO>(newProduct);
 
@@ -99,14 +100,14 @@ namespace ShoplistAPI.Controllers
         /// <response code="404">Não foi encontrado produto com ID especificado.</response>
         [HttpPut("{id}")]
         [ApiConventionMethod(typeof(DefaultApiConventions), nameof(DefaultApiConventions.Put))]
-        public ActionResult<Product> Update(int id, [FromBody] ProductDTO productDto)
+        public async Task<ActionResult<Product>> Update(int id, [FromBody] ProductDTO productDto)
         {
             if (id != productDto.Id) return BadRequest();
 
             var productChanged = _mapper.Map<Product>(productDto);
 
             _unitOfWork.ProductRepository.Update(productChanged);
-            _unitOfWork.Commit();
+            await _unitOfWork.Commit();
 
             var productChangedDto = _mapper.Map<ProductDTO>(productChanged);
             return Ok(productChangedDto);
@@ -120,15 +121,15 @@ namespace ShoplistAPI.Controllers
         /// <response code="404">Não foi encontrado produto com ID especificado.</response>
         [HttpDelete("{id}")]
         [ApiConventionMethod(typeof(DefaultApiConventions), nameof(DefaultApiConventions.Delete))]
-        public ActionResult<Product> DeleteProduct(int id)
+        public async Task<ActionResult<Product>> DeleteProduct(int id)
         {
-            var productToDelete = _unitOfWork.ProductRepository.GetById(p => p.Id == id);
+            var productToDelete = await _unitOfWork.ProductRepository.GetById(p => p.Id == id);
 
             if (productToDelete == null) return NotFound("Não foi encontrado produto com ID especificado.");
 
 
             _unitOfWork.ProductRepository.Delete(productToDelete);
-            _unitOfWork.Commit();
+            await _unitOfWork.Commit();
 
             return Ok("Produto deletado com sucesso.");
         }

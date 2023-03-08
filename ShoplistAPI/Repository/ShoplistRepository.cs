@@ -15,19 +15,5 @@ namespace ShoplistAPI.Repository
         {
             _context = shoplistContext;
         }
-
-        //public async Task<List<ShoplistDTO>> GetAll()
-        //{
-        //    return await _context.Shoplists
-        //        .Select(sl => new ShoplistDTO
-        //        {
-        //            Id = sl.Id,
-        //            Name = sl.Name,
-        //            Description = sl.Description,
-        //            Products = sl.Products,
-        //        })
-        //        .AsNoTracking()
-        //        .ToListAsync();
-        //}
     }
 }
