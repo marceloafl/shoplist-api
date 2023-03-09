@@ -19,7 +19,7 @@ namespace ShoplistAPI.Repository
 
         public async Task<Shoplist> GetById(Expression<Func<Shoplist, bool>> predicate)
         {
-            return await _context.Set<Shoplist>().Include(sl => sl.Products).SingleOrDefaultAsync(predicate);
+            return await _context.Set<Shoplist>().AsNoTracking().Include(sl => sl.Products).SingleOrDefaultAsync(predicate);
         }
     }
 }

@@ -100,7 +100,7 @@ namespace ShoplistAPI.Controllers
         /// <response code="404">Não foi encontrado produto com ID especificado.</response>
         [HttpPut("{id}")]
         [ApiConventionMethod(typeof(DefaultApiConventions), nameof(DefaultApiConventions.Put))]
-        public async Task<ActionResult<Product>> Update(int id, [FromBody] ProductDTO productDto)
+        public async Task<ActionResult<ProductDTO>> Update(int id, [FromBody] ProductDTO productDto)
         {
             if (id != productDto.Id) return BadRequest();
 
@@ -121,12 +121,10 @@ namespace ShoplistAPI.Controllers
         /// <response code="404">Não foi encontrado produto com ID especificado.</response>
         [HttpDelete("{id}")]
         [ApiConventionMethod(typeof(DefaultApiConventions), nameof(DefaultApiConventions.Delete))]
-        public async Task<ActionResult<Product>> DeleteProduct(int id)
+        public async Task<ActionResult<ProductDTO>> DeleteProduct(int id)
         {
             var productToDelete = await _unitOfWork.ProductRepository.GetById(p => p.Id == id);
-
             if (productToDelete == null) return NotFound("Não foi encontrado produto com ID especificado.");
-
 
             _unitOfWork.ProductRepository.Delete(productToDelete);
             await _unitOfWork.Commit();

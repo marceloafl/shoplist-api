@@ -67,8 +67,11 @@ namespace ShoplistAPI.Controllers
 
             if (shoplistWithQueriedId == null) return NotFound();
 
-            var searchedShoplist = _mapper.Map<ShoplistDTO>(shoplistWithQueriedId);
-            return Ok(searchedShoplist);
+            //var searchedShoplist = _mapper.Map<ShoplistDTO>(shoplistWithQueriedId);
+
+            var a = _mapper.Map<ShoplistDTO>(shoplistWithQueriedId);
+
+            return Ok(a);
         }
 
         /// <summary>
@@ -95,7 +98,7 @@ namespace ShoplistAPI.Controllers
             }
             catch (Exception e)
             {
-                return BadRequest(e.Message);
+                return BadRequest();
             }
         }
 
@@ -110,6 +113,9 @@ namespace ShoplistAPI.Controllers
         public async Task<ActionResult<ShoplistDTO>> Update(int id, [FromBody] ShoplistDTO shoplistDto)
         {
             if (id != shoplistDto.Id) return BadRequest();
+
+            var shoplistToUpdate = await _unitOfWork.ShoplistRepository.GetById(sl => sl.Id == id);
+            if (shoplistToUpdate == null) return NotFound("Não foi encontrada lista de compras com ID especificado");
 
             var shoplistChanged = _mapper.Map<Shoplist>(shoplistDto);
 
@@ -130,7 +136,6 @@ namespace ShoplistAPI.Controllers
         public async Task<ActionResult<ShoplistDTO>> DeleteShoplist(int id)
         {
             var shoplistToDelete = await _unitOfWork.ShoplistRepository.GetById(sl => sl.Id == id);
-        
             if (shoplistToDelete == null) return NotFound("Não foi encontrada lista de compras com ID especificado");
 
             _unitOfWork.ShoplistRepository.Delete(shoplistToDelete);

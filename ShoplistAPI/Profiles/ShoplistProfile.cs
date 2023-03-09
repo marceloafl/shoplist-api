@@ -8,7 +8,7 @@ namespace ShoplistAPI.Profiles
     {
         public ShoplistProfile()
         {
-            CreateMap<ShoplistDTO, Shoplist>().ReverseMap();
+            CreateMap<Shoplist, ShoplistDTO>().ReverseMap();
         }
     }
 }
