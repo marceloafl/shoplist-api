@@ -7,6 +7,7 @@ using ShoplistAPI.Data;
 using ShoplistAPI.Repository;
 using ShoplistAPI.Profiles;
 using FluentAssertions;
+using ShoplistAPI.Pagination;
 
 namespace ShoplistAPIxUnitTests
 {
@@ -51,9 +52,10 @@ namespace ShoplistAPIxUnitTests
         {
             // Arrange
             var controller = new ProductController(repository, mapper);
+            var parameters = new ProductParameters (1, 10);
 
             //Act
-            var data = await controller.GetAll();
+            var data = await controller.GetAll(parameters);
 
             //Assert
             Assert.IsType<ActionResult<IQueryable<ProductDTO>>>(data);
@@ -66,9 +68,10 @@ namespace ShoplistAPIxUnitTests
         {
             // Arrange
             var controller = new ProductController(repository, mapper);
+            var parameters = new ProductParameters(1, 10);
 
             //Act
-            var data = await controller.GetAll();
+            var data = await controller.GetAll(parameters);
 
             //Assert
             Assert.IsType<BadRequestResult>(data.Result);
@@ -79,7 +82,7 @@ namespace ShoplistAPIxUnitTests
         {
             // Arrange
             var controller = new ProductController(repository, mapper);
-            var productId = 1;
+            var productId = 2;
 
             // Act
             var data = await controller.GetById(productId);
@@ -153,7 +156,7 @@ namespace ShoplistAPIxUnitTests
         {
             // Arrange
             var controller = new ProductController(repository, mapper);
-            var productId = 4;
+            var productId = 7;
 
             // Act
             var exinstingProduct = await controller.GetById(productId);

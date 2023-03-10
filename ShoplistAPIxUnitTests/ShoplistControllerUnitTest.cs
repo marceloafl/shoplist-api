@@ -6,6 +6,7 @@ using ShoplistAPI.Controllers;
 using ShoplistAPI.Data;
 using ShoplistAPI.Data.DTOs;
 using ShoplistAPI.Model;
+using ShoplistAPI.Pagination;
 using ShoplistAPI.Profiles;
 using ShoplistAPI.Repository;
 
@@ -53,9 +54,12 @@ namespace ShoplistAPIxUnitTests
         {
             // Arrange
             var controller = new ShoplistController(repository, mapper);
+            var parameters = new ShoplistParameters();
+            parameters.Page = 1;
+            parameters.PageSize = 10;
 
             //Act
-            var data = await controller.GetAll();
+            var data = await controller.GetAll(parameters);
 
             //Assert
             Assert.IsType<ActionResult<IQueryable<ShoplistDTO>>>(data);
@@ -68,9 +72,12 @@ namespace ShoplistAPIxUnitTests
         {
             // Arrange
             var controller = new ShoplistController(repository, mapper);
+            var parameters = new ShoplistParameters();
+            parameters.Page = 1;
+            parameters.PageSize = 10;
 
             //Act
-            var data = await controller.GetAll();
+            var data = await controller.GetAll(parameters);
 
             //Assert
             Assert.IsType<BadRequestResult>(data.Result);
@@ -81,7 +88,7 @@ namespace ShoplistAPIxUnitTests
         {
             // Arrange
             var controller = new ShoplistController(repository, mapper);
-            var shoplistId = 2;
+            var shoplistId = 1;
 
             // Act
             var data = await controller.GetById(shoplistId);
@@ -141,7 +148,7 @@ namespace ShoplistAPIxUnitTests
         {
             // Arrange
             var controller = new ShoplistController(repository, mapper);
-            var shoplistId = 100;
+            var shoplistId = 3;
 
             // Act
             var exinstingShoplist = await controller.GetById(shoplistId);
@@ -177,7 +184,7 @@ namespace ShoplistAPIxUnitTests
         {
             // Arrange
             var controller = new ShoplistController(repository, mapper);
-            var shoplistId = 12;
+            var shoplistId = 111;
 
             // Act
             var data = await controller.DeleteShoplist(shoplistId);
