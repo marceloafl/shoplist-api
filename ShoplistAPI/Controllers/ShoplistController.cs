@@ -3,7 +3,9 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ShoplistAPI.Data.DTOs;
 using ShoplistAPI.Model;
+using ShoplistAPI.Pagination;
 using ShoplistAPI.Repository;
+using System.Text.Json;
 
 namespace ShoplistAPI.Controllers
 {
@@ -28,21 +30,24 @@ namespace ShoplistAPI.Controllers
         /// <response code="200">Listagem com listas de compras obtida com sucesso.</response>
         /// <response code="400">Ocorreu um erro ao tentar processar a solicitação.</response>
         [HttpGet]
-        public async Task<ActionResult<IQueryable<ShoplistDTO>>> GetAll()
+        public async Task<ActionResult<IQueryable<ShoplistDTO>>> GetAll([FromQuery] ShoplistParameters shoplistParameters)
         {
             try
             {
                 var shoplists = await _unitOfWork.ShoplistRepository
-                    .GetAll()
-                    .Select(sl => new Shoplist
-                    {
-                        Id = sl.Id,
-                        Name = sl.Name,
-                        Description = sl.Description,
-                        Products = sl.Products,
-                    })
-                    .AsNoTracking()
-                    .ToListAsync();
+                    .GetShoplists(shoplistParameters);
+
+                var metadata = new
+                {
+                    shoplists.TotalCount,
+                    shoplists.PageSize,
+                    shoplists.CurrentPage,
+                    shoplists.TotalPages,
+                    shoplists.HasNext,
+                    shoplists.HasPrevious
+                };
+
+                Response.Headers.Add("X-Pagination", JsonSerializer.Serialize(metadata));
 
                 var shoplistDto = _mapper.Map<List<ShoplistDTO>>(shoplists);
                 return Ok(shoplistDto);

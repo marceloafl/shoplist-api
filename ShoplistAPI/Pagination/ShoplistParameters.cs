@@ -1,6 +1,6 @@
 ﻿namespace ShoplistAPI.Pagination
 {
-    public class ProductParameters
+    public class ShoplistParameters
     {
         const int maxSize = 50;
         public int Page { get; set; } = 1;
@@ -15,12 +15,6 @@
             {
                 _pageSize = (value > maxSize) ? maxSize : value;
             }
-        }
-
-        public ProductParameters(int page, int pageSize)
-        {
-            Page = page;
-            PageSize = pageSize;
         }
     }
 }

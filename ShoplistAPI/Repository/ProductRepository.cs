@@ -17,11 +17,6 @@ namespace ShoplistAPI.Repository
 
         public async Task<PagedList<Product>> GetProducts(ProductParameters productParameters)
         {
-            //return await GetAll()
-            //    .Skip((productParameters.Page - 1) * productParameters.PageSize)
-            //    .Take(productParameters.PageSize)
-            //    .ToListAsync();
-
             return PagedList<Product>.ToPagedList(
                 GetAll(),
                 productParameters.Page,

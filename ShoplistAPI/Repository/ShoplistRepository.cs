@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using ShoplistAPI.Data;
 using ShoplistAPI.Data.DTOs;
 using ShoplistAPI.Model;
+using ShoplistAPI.Pagination;
 using System.Linq.Expressions;
 
 namespace ShoplistAPI.Repository
@@ -20,6 +21,21 @@ namespace ShoplistAPI.Repository
         public async Task<Shoplist> GetById(Expression<Func<Shoplist, bool>> predicate)
         {
             return await _context.Set<Shoplist>().AsNoTracking().Include(sl => sl.Products).SingleOrDefaultAsync(predicate);
+        }
+
+        public async Task<PagedList<Shoplist>> GetShoplists(ShoplistParameters shoplistParameter)
+        {
+            return PagedList<Shoplist>.ToPagedList(
+                 GetAll()
+                .Select(sl => new Shoplist
+                {
+                    Id = sl.Id,
+                    Name = sl.Name,
+                    Description = sl.Description,
+                    Products = sl.Products,
+                }).AsNoTracking(),
+                shoplistParameter.Page,
+                shoplistParameter.PageSize);
         }
     }
 }
