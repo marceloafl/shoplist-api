@@ -3,7 +3,10 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ShoplistAPI.Data.DTOs;
 using ShoplistAPI.Model;
+using ShoplistAPI.Pagination;
 using ShoplistAPI.Repository;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace ShoplistAPI.Controllers
 {
@@ -28,11 +31,24 @@ namespace ShoplistAPI.Controllers
         /// /// <response code="400">Ocorreu um erro ao tentar processar a solicitação.</response>
         [HttpGet]
         [ProducesResponseType(typeof(ProductDTO), StatusCodes.Status200OK)]
-        public async Task<ActionResult<IQueryable<ProductDTO>>> GetAll()
+        public async Task<ActionResult<IQueryable<ProductDTO>>> GetAll([FromQuery] ProductParameters productParameters)
         {
             try
             {
-                var products = await _unitOfWork.ProductRepository.GetAll().AsNoTracking().ToListAsync();
+                var products = await _unitOfWork.ProductRepository.GetProducts(productParameters);
+
+                var metadata = new
+                {
+                    products.TotalCount,
+                    products.PageSize,
+                    products.CurrentPage,
+                    products.TotalPages,
+                    products.HasNext,
+                    products.HasPrevious
+                };
+
+                Response.Headers.Add("X-Pagination", JsonSerializer.Serialize(metadata));
+
                 var productDto = _mapper.Map<List<ProductDTO>>(products);
                 return Ok(productDto);
             }
