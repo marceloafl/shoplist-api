@@ -1,6 +1,4 @@
-﻿using ShoplistAPI.Data.DTOs;
-using ShoplistAPI.Model;
-using System.Linq.Expressions;
+﻿using System.Linq.Expressions;
 
 namespace ShoplistAPI.Repository
 {

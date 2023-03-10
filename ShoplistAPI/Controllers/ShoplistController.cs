@@ -1,6 +1,5 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using ShoplistAPI.Data.DTOs;
 using ShoplistAPI.Model;
 using ShoplistAPI.Pagination;

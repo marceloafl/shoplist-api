@@ -1,12 +1,10 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using ShoplistAPI.Data.DTOs;
 using ShoplistAPI.Model;
 using ShoplistAPI.Pagination;
 using ShoplistAPI.Repository;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 
 namespace ShoplistAPI.Controllers
 {

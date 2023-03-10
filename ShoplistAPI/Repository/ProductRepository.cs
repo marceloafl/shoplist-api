@@ -1,6 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
-using ShoplistAPI.Data;
-using ShoplistAPI.Data.DTOs;
+﻿using ShoplistAPI.Data;
 using ShoplistAPI.Model;
 using ShoplistAPI.Pagination;
 

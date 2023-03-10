@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace ShoplistAPI.Model;
+﻿namespace ShoplistAPI.Model;
 
 public partial class Shoplist
 {

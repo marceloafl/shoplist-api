@@ -5,7 +5,6 @@ using Microsoft.EntityFrameworkCore;
 using ShoplistAPI.Controllers;
 using ShoplistAPI.Data;
 using ShoplistAPI.Data.DTOs;
-using ShoplistAPI.Model;
 using ShoplistAPI.Pagination;
 using ShoplistAPI.Profiles;
 using ShoplistAPI.Repository;
@@ -148,7 +147,7 @@ namespace ShoplistAPIxUnitTests
         {
             // Arrange
             var controller = new ShoplistController(repository, mapper);
-            var shoplistId = 3;
+            var shoplistId = 6;
 
             // Act
             var exinstingShoplist = await controller.GetById(shoplistId);
@@ -184,7 +183,7 @@ namespace ShoplistAPIxUnitTests
         {
             // Arrange
             var controller = new ShoplistController(repository, mapper);
-            var shoplistId = 111;
+            var shoplistId = 124;
 
             // Act
             var data = await controller.DeleteShoplist(shoplistId);

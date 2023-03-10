@@ -1,5 +1,4 @@
-﻿using ShoplistAPI.Data.DTOs;
-using ShoplistAPI.Model;
+﻿using ShoplistAPI.Model;
 using ShoplistAPI.Pagination;
 
 namespace ShoplistAPI.Repository
