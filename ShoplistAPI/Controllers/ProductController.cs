@@ -4,6 +4,7 @@ using ShoplistAPI.Data.DTOs;
 using ShoplistAPI.Model;
 using ShoplistAPI.Pagination;
 using ShoplistAPI.Repository;
+using Swashbuckle.AspNetCore.Annotations;
 using System.Text.Json;
 
 namespace ShoplistAPI.Controllers
@@ -22,13 +23,13 @@ namespace ShoplistAPI.Controllers
             _mapper = mapper;
         }
 
-        /// <summary>
-        /// Retorna listagem com todos os produtos cadastrados
-        /// </summary>
-        /// <response code="200">Listagem de produtos obtida com sucesso.</response>
-        /// /// <response code="400">Ocorreu um erro ao tentar processar a solicitação.</response>
         [HttpGet]
-        [ProducesResponseType(typeof(ProductDTO), StatusCodes.Status200OK)]
+        [SwaggerOperation(
+            Summary = "Retorna produtos cadastrados",
+            Description = "Retorna listagem com todos os produtos cadastrados"
+        )]
+        [SwaggerResponse(200, "Listagem de produtos obtida com sucesso.", typeof(ShoplistDTO))]
+        [SwaggerResponse(400, "Ocorreu um erro ao tentar processar a solicitação.")]
         public async Task<ActionResult<IQueryable<ProductDTO>>> GetAll([FromQuery] ProductParameters productParameters)
         {
             try
@@ -56,15 +57,12 @@ namespace ShoplistAPI.Controllers
             }
         }
 
-        /// <summary>
-        /// Retorna um produto específio por ID.
-        /// </summary>
-        /// <param name="id">ID do produto.</param>
-        /// <response code="200">Produto obtido com sucesso.</response>
-        /// <response code="404">Não foi encontrado produto com o ID especificado.</response>
         [HttpGet("{id}")]
-        [ProducesResponseType(typeof(ProductDTO), StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [SwaggerOperation(
+            Summary = "Retorna um produto específio por ID"
+        )]
+        [SwaggerResponse(200, "Produto obtido com sucesso.", typeof(ShoplistDTO))]
+        [SwaggerResponse(404, "Não foi encontrado produto com o ID especificado.")]
         public async Task<ActionResult<ProductDTO>> GetById(int id)
         {
             var productWithQueriedId = await _unitOfWork.ProductRepository.GetById(p => p.Id == id);
@@ -75,14 +73,12 @@ namespace ShoplistAPI.Controllers
             return Ok(searchedProduct);
         }
 
-        /// <summary>
-        /// Cadastra um produto.
-        /// </summary>
-        /// <param name="productDto">Modelo de produto.</param>
-        /// <response code="201">Produto cadastrado com sucesso.</response>
         [HttpPost]
-        [ProducesResponseType(StatusCodes.Status201Created)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [SwaggerOperation(
+            Summary = "Cadastra um produto."
+        )]
+        [SwaggerResponse(201, "Produto cadastrado com sucesso.", typeof(ShoplistDTO))]
+        [SwaggerResponse(400, "")]
         public async Task<ActionResult<ProductDTO>> Add([FromBody] ProductDTO productDto)
         {
             try
@@ -105,15 +101,12 @@ namespace ShoplistAPI.Controllers
             }
         }
 
-        /// <summary>
-        /// Altera um produto específico por ID.
-        /// </summary> 
-        /// <param name="id">ID do produto.</param>
-        /// <param name="productDto">Modelo do produto.</param>
-        /// <response code="204">Produto alterado com sucesso.</response>
-        /// <response code="404">Não foi encontrado produto com ID especificado.</response>
         [HttpPut("{id}")]
-        [ApiConventionMethod(typeof(DefaultApiConventions), nameof(DefaultApiConventions.Put))]
+        [SwaggerOperation(
+            Summary = "Altera um produto específico por ID."
+        )]
+        [SwaggerResponse(204, "Produto alterado com sucesso.", typeof(ShoplistDTO))]
+        [SwaggerResponse(404, "Não foi encontrado produto com ID especificado.")]
         public async Task<ActionResult<ProductDTO>> Update(int id, [FromBody] ProductDTO productDto)
         {
             if (id != productDto.Id) return BadRequest();
@@ -127,14 +120,12 @@ namespace ShoplistAPI.Controllers
             return Ok(productChangedDto);
         }
 
-        /// <summary>
-        /// Deleta um produto específico.
-        /// </summary>
-        /// <param name="id">ID do produto.</param>
-        /// <response code="204">Produto deletado com sucesso.</response>
-        /// <response code="404">Não foi encontrado produto com ID especificado.</response>
         [HttpDelete("{id}")]
-        [ApiConventionMethod(typeof(DefaultApiConventions), nameof(DefaultApiConventions.Delete))]
+        [SwaggerOperation(
+            Summary = "Deleta um produto específico."
+        )]
+        [SwaggerResponse(204, "Produto deletado com sucesso.", typeof(ShoplistDTO))]
+        [SwaggerResponse(404, "Não foi encontrado produto com ID especificado.")]
         public async Task<ActionResult<ProductDTO>> DeleteProduct(int id)
         {
             var productToDelete = await _unitOfWork.ProductRepository.GetById(p => p.Id == id);
