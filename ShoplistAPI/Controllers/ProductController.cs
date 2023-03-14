@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using ShoplistAPI.Data.DTOs;
 using ShoplistAPI.Model;
+using ShoplistAPI.Model.ViewModel;
 using ShoplistAPI.Pagination;
 using ShoplistAPI.Repository;
 using Swashbuckle.AspNetCore.Annotations;
@@ -24,12 +25,12 @@ namespace ShoplistAPI.Controllers
         }
 
         [HttpGet]
-        [SwaggerOperation(
-            Summary = "Retorna produtos cadastrados",
-            Description = "Retorna listagem com todos os produtos cadastrados"
-        )]
-        [SwaggerResponse(200, "Listagem de produtos obtida com sucesso.", typeof(ShoplistDTO))]
-        [SwaggerResponse(400, "Ocorreu um erro ao tentar processar a solicitação.")]
+        //[SwaggerOperation(
+        //    Summary = "Retorna produtos cadastrados",
+        //    Description = "Retorna listagem com todos os produtos cadastrados"
+        //)]
+        //[SwaggerResponse(200, "Listagem de produtos obtida com sucesso.", typeof(ProductDTO))]
+        //[SwaggerResponse(400, "Ocorreu um erro ao tentar processar a solicitação.")]
         public async Task<ActionResult<IQueryable<ProductDTO>>> GetAll([FromQuery] ProductParameters productParameters)
         {
             try
@@ -49,6 +50,8 @@ namespace ShoplistAPI.Controllers
                 Response.Headers.Add("X-Pagination", JsonSerializer.Serialize(metadata));
 
                 var productDto = _mapper.Map<List<ProductDTO>>(products);
+                //ProductResponse productResponse = new ProductResponse(productDto);
+
                 return Ok(productDto);
             }
             catch (Exception)
@@ -61,25 +64,29 @@ namespace ShoplistAPI.Controllers
         [SwaggerOperation(
             Summary = "Retorna um produto específio por ID"
         )]
-        [SwaggerResponse(200, "Produto obtido com sucesso.", typeof(ShoplistDTO))]
+        [SwaggerResponse(200, "Produto obtido com sucesso.", typeof(ProductResponse))]
         [SwaggerResponse(404, "Não foi encontrado produto com o ID especificado.")]
-        public async Task<ActionResult<ProductDTO>> GetById(int id)
+        public async Task<ActionResult<ProductResponse>> GetById(int id)
         {
             var productWithQueriedId = await _unitOfWork.ProductRepository.GetById(p => p.Id == id);
             
             if (productWithQueriedId == null) return NotFound();
 
             var searchedProduct = _mapper.Map<ProductDTO>(productWithQueriedId);
-            return Ok(searchedProduct);
+
+            ProductResponse productResponse = new ProductResponse();
+            productResponse.Products.Add(searchedProduct);
+
+            return Ok(productResponse);
         }
 
         [HttpPost]
         [SwaggerOperation(
             Summary = "Cadastra um produto."
         )]
-        [SwaggerResponse(201, "Produto cadastrado com sucesso.", typeof(ShoplistDTO))]
+        [SwaggerResponse(201, "Produto cadastrado com sucesso.")]
         [SwaggerResponse(400, "")]
-        public async Task<ActionResult<ProductDTO>> Add([FromBody] ProductDTO productDto)
+        public async Task<ActionResult> Add([FromBody] ProductDTO productDto)
         {
             try
             {
@@ -105,9 +112,9 @@ namespace ShoplistAPI.Controllers
         [SwaggerOperation(
             Summary = "Altera um produto específico por ID."
         )]
-        [SwaggerResponse(204, "Produto alterado com sucesso.", typeof(ShoplistDTO))]
-        [SwaggerResponse(404, "Não foi encontrado produto com ID especificado.")]
-        public async Task<ActionResult<ProductDTO>> Update(int id, [FromBody] ProductDTO productDto)
+        [SwaggerResponse(204, "Produto atualizado com sucesso.")]
+        [SwaggerResponse(400, "")]
+        public async Task<ActionResult> Update(int id, [FromBody] ProductDTO productDto)
         {
             if (id != productDto.Id) return BadRequest();
 
@@ -117,16 +124,16 @@ namespace ShoplistAPI.Controllers
             await _unitOfWork.Commit();
 
             var productChangedDto = _mapper.Map<ProductDTO>(productChanged);
-            return Ok(productChangedDto);
+            return Ok("Produto atualizado com sucesso.");
         }
 
         [HttpDelete("{id}")]
         [SwaggerOperation(
             Summary = "Deleta um produto específico."
         )]
-        [SwaggerResponse(204, "Produto deletado com sucesso.", typeof(ShoplistDTO))]
+        [SwaggerResponse(204, "Produto deletado com sucesso.")]
         [SwaggerResponse(404, "Não foi encontrado produto com ID especificado.")]
-        public async Task<ActionResult<ProductDTO>> DeleteProduct(int id)
+        public async Task<ActionResult> DeleteProduct(int id)
         {
             var productToDelete = await _unitOfWork.ProductRepository.GetById(p => p.Id == id);
             if (productToDelete == null) return NotFound("Não foi encontrado produto com ID especificado.");

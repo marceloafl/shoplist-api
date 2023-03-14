@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using ShoplistAPI.Data.DTOs;
 using ShoplistAPI.Model;
+using ShoplistAPI.Model.ViewModel;
 using ShoplistAPI.Pagination;
 using ShoplistAPI.Repository;
 using Swashbuckle.AspNetCore.Annotations;
@@ -29,9 +30,9 @@ namespace ShoplistAPI.Controllers
             Summary = "Retorna listas de compras",
             Description = "Retorna listagem com todas as listas de compras cadastradas"
         )]
-        [SwaggerResponse( 200, "Listagem com listas de compras obtida com sucesso.", typeof( ShoplistDTO ) )]
+        [SwaggerResponse( 200, "Listagem com listas de compras obtida com sucesso.", typeof( ShoplistResponse ) )]
         [SwaggerResponse( 400, "Ocorreu um erro ao tentar processar a solicitação.")]
-        public async Task<ActionResult<IQueryable<ShoplistDTO>>> GetAll([FromQuery] ShoplistParameters shoplistParameters)
+        public async Task<ActionResult<IQueryable<ShoplistResponse>>> GetAll([FromQuery] ShoplistParameters shoplistParameters)
         {
             try
             {
@@ -51,7 +52,9 @@ namespace ShoplistAPI.Controllers
                 Response.Headers.Add("X-Pagination", JsonSerializer.Serialize(metadata));
 
                 var shoplistDto = _mapper.Map<List<ShoplistDTO>>(shoplists);
-                return Ok(shoplistDto);
+                ShoplistResponse shoplistResponse = new ShoplistResponse(shoplistDto);
+
+                return Ok(shoplistResponse);
         }
             catch(Exception)
             {
@@ -64,28 +67,29 @@ namespace ShoplistAPI.Controllers
         [SwaggerOperation(
             Summary = "Retorna uma lista de compras específica por ID"
         )]
-        [SwaggerResponse(200, "Lista de compras obtida com sucesso.", typeof(ShoplistDTO))]
+        [SwaggerResponse(200, "Lista de compras obtida com sucesso.", typeof(ShoplistResponse))]
         [SwaggerResponse(404, "Não foi encontrado lista de compras com o ID especificado.")]
-        public async Task<ActionResult<ShoplistDTO>> GetById(int id)
+        public async Task<ActionResult<ProductResponse>> GetById(int id)
         {
             var shoplistWithQueriedId = await _unitOfWork.ShoplistRepository.GetById(sl => sl.Id == id);
 
             if (shoplistWithQueriedId == null) return NotFound();
 
-            //var searchedShoplist = _mapper.Map<ShoplistDTO>(shoplistWithQueriedId);
+            var searchedShoplist = _mapper.Map<ShoplistDTO>(shoplistWithQueriedId);
 
-            var a = _mapper.Map<ShoplistDTO>(shoplistWithQueriedId);
+            ShoplistResponse shoplistResponse = new ShoplistResponse();
+            shoplistResponse.Shoplists.Add(searchedShoplist);
 
-            return Ok(a);
+            return Ok(shoplistResponse);
         }
 
         [HttpPost]
         [SwaggerOperation(
             Summary = "Cadastra uma lista de compras."
         )]
-        [SwaggerResponse(201, "Lista de compras cadastrada com sucesso.", typeof(ShoplistDTO))]
+        [SwaggerResponse(201, "Lista de compras cadastrada com sucesso.")]
         [SwaggerResponse(400, "")]
-        public async Task<ActionResult<ShoplistDTO>> Add([FromBody] ShoplistDTO shoplistDto)
+        public async Task<ActionResult> Add([FromBody] ShoplistDTO shoplistDto)
         {
             try
             {
@@ -94,6 +98,9 @@ namespace ShoplistAPI.Controllers
                 await _unitOfWork.Commit();
 
                 var newShoplistDto = _mapper.Map<ShoplistDTO>(newShoplist);
+
+                //ShoplistResponse shoplistResponse = new ShoplistResponse();
+                //shoplistResponse.Shoplists.Add(newShoplistDto);
 
                 return CreatedAtAction(
                     nameof(GetById),
@@ -111,14 +118,14 @@ namespace ShoplistAPI.Controllers
         [SwaggerOperation(
             Summary = "Atualiza uma lista de compras específica por ID."
         )]
-        [SwaggerResponse(204, "Lista de compras alterada com sucesso.", typeof(ShoplistDTO))]
-        [SwaggerResponse(404, "O id especificado e o id da lista de compras não são iguais.")]
-        public async Task<ActionResult<ShoplistDTO>> Update(int id, [FromBody] ShoplistDTO shoplistDto)
+        [SwaggerResponse(204, "Lista de compras atualizada com sucesso.")]
+        [SwaggerResponse(400, "")]
+        public async Task<ActionResult> Update(int id, [FromBody] ShoplistDTO shoplistDto)
         {
             if (id != shoplistDto.Id) return BadRequest();
 
             var shoplistToUpdate = await _unitOfWork.ShoplistRepository.GetById(sl => sl.Id == id);
-            if (shoplistToUpdate == null) return NotFound("Não foi encontrada lista de compras com ID especificado");
+            if (shoplistToUpdate == null) return NotFound("Não foi encontrada lista de compras com ID especificado.");
 
             var shoplistChanged = _mapper.Map<Shoplist>(shoplistDto);
 
@@ -126,16 +133,16 @@ namespace ShoplistAPI.Controllers
             await _unitOfWork.Commit();
 
             var shoplistChangedDto = _mapper.Map<ShoplistDTO>(shoplistChanged);
-            return Ok(shoplistChangedDto);
+            return Ok("Lista de compras atualizada com sucesso.");
         }
 
         [HttpDelete("{id}")]
         [SwaggerOperation(
             Summary = "Deleta uma lista de compras específica."
         )]
-        [SwaggerResponse(204, "Lista de compras deletada com sucesso.", typeof(ShoplistDTO))]
+        [SwaggerResponse(204, "Lista de compras deletada com sucesso.")]
         [SwaggerResponse(404, "Não foi encontrada lista de compras com ID especificado.")]
-        public async Task<ActionResult<ShoplistDTO>> DeleteShoplist(int id)
+        public async Task<ActionResult> DeleteShoplist(int id)
         {
             var shoplistToDelete = await _unitOfWork.ShoplistRepository.GetById(sl => sl.Id == id);
             if (shoplistToDelete == null) return NotFound("Não foi encontrada lista de compras com ID especificado");

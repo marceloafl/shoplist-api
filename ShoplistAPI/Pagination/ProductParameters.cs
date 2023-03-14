@@ -22,5 +22,10 @@
             Page = page;
             PageSize = pageSize;
         }
+
+        public ProductParameters()
+        {
+
+        }
     }
 }
