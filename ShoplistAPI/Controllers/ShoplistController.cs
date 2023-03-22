@@ -63,6 +63,44 @@ namespace ShoplistAPI.Controllers
 
         }
 
+        [HttpGet("summary/{summaryAmount}")]
+        [SwaggerOperation(
+            Summary = "Retorna listas de compras com a quantidade de produtos resumida",
+            Description = "Retorna listagem com todas as listas de compras cadastradas com a quantidade de produtos resumida"
+        )]
+        [SwaggerResponse(200, "Listagem com listas de compras obtida com sucesso.", typeof(ShoplistResponse))]
+        [SwaggerResponse(400, "Ocorreu um erro ao tentar processar a solicitação.")]
+        public async Task<ActionResult<IQueryable<ShoplistResponse>>> GetShoplistSummarized([FromQuery] ShoplistParameters shoplistParameters, int summaryAmount )
+        {
+            try
+            {
+                var shoplists = await _unitOfWork.ShoplistRepository
+                    .GetShoplistsSummarized(shoplistParameters, summaryAmount);
+
+                var metadata = new
+                {
+                    shoplists.TotalCount,
+                    shoplists.PageSize,
+                    shoplists.CurrentPage,
+                    shoplists.TotalPages,
+                    shoplists.HasNext,
+                    shoplists.HasPrevious
+                };
+
+                Response.Headers.Add("X-Pagination", JsonSerializer.Serialize(metadata));
+
+                var shoplistDto = _mapper.Map<List<ShoplistDTO>>(shoplists);
+                ShoplistResponse shoplistResponse = new ShoplistResponse(shoplistDto);
+
+                return Ok(shoplistResponse);
+            }
+            catch (Exception)
+            {
+                return BadRequest();
+            }
+
+        }
+
         [HttpGet("{id}")]
         [SwaggerOperation(
             Summary = "Retorna uma lista de compras específica por ID"

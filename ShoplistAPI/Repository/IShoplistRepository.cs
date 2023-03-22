@@ -6,5 +6,6 @@ namespace ShoplistAPI.Repository
     public interface IShoplistRepository : IRepository<Shoplist>
     {
         Task<PagedList<Shoplist>> GetShoplists(ShoplistParameters shoplistParameter);
+        Task<PagedList<Shoplist>> GetShoplistsSummarized(ShoplistParameters shoplistParameter, int numberOfProducts);
     }
 }

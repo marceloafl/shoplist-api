@@ -35,5 +35,20 @@ namespace ShoplistAPI.Repository
                 shoplistParameter.Page,
                 shoplistParameter.PageSize);
         }
+
+        public async Task<PagedList<Shoplist>> GetShoplistsSummarized(ShoplistParameters shoplistParameter, int summaryAmount)
+        {
+            return PagedList<Shoplist>.ToPagedList(
+                 GetAll()
+                .Select(sl => new Shoplist
+                {
+                    Id = sl.Id,
+                    Name = sl.Name,
+                    Description = sl.Description,
+                    Products = (ICollection<Product>)sl.Products.Take(summaryAmount),
+                }).AsNoTracking(),
+                shoplistParameter.Page,
+                shoplistParameter.PageSize);
+        }
     }
 }
